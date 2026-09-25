@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#12101c">
+<title>Рулетка с призами</title>
+<link rel="stylesheet" href="style.css?v=23">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══════════════ ШАПКА ══════════════ -->
+  <header class="top">
+    <div class="top__line">
+      <div class="top__date" id="hudDate">—</div>
+      <div class="top__back" id="btnBack" hidden>‹ Назад</div>
+    </div>
+
+    <div class="cards">
+      <div class="card card--timer">
+        <div class="card__label">⏱ До нового дня</div>
+        <div class="card__value" id="hudTimer">—</div>
+      </div>
+      <div class="card card--balance" id="cardReal">
+        <div class="card__label">💰 Реальный</div>
+        <div class="card__value" id="hudReal">—</div>
+      </div>
+      <div class="card card--balance card--test" id="cardTest">
+        <div class="card__label">🧪 Тестовый<span class="testbadge" id="testBadge" hidden>TEST</span></div>
+        <div class="card__value" id="hudTest">—</div>
+      </div>
+    </div>
+
+    <div class="walletsw" id="walletSw" role="tablist" aria-label="Активный баланс">
+      <button class="walletsw__btn is-active" data-wallet="real" role="tab">💰 Играю на реальном</button>
+      <button class="walletsw__btn" data-wallet="test" role="tab">🧪 Играю на тестовом</button>
+    </div>
+    <p class="walletsw__note" id="walletNote"></p>
+
+    <div class="recent" id="hudRecent"></div>
+  </header>
+
+  <!-- ══════════════ ЭКРАН: РУЛЕТКА ══════════════ -->
+  <section class="screen is-active" id="screenMain">
+
+    <div class="wheelbox">
+      <div class="pointer"></div>
+      <canvas id="wheel" class="wheel" width="680" height="680"></canvas>
+      <div class="result" id="resultBadge" hidden></div>
+    </div>
+
+    <!-- Крутить — сразу под колесом, выше всех остальных кнопок:
+         главное действие не должно искаться среди фишек и полей. -->
+    <button class="btn btn--spin" id="btnSpin" disabled>🎰 КРУТИТЬ</button>
+
+    <div class="chips" id="chips">
+      <button class="chip" data-chip="10">10</button>
+      <button class="chip is-active" data-chip="50">50</button>
+      <button class="chip" data-chip="100">100</button>
+      <button class="chip" data-chip="500">500</button>
+      <button class="chip chip--max" data-chip="MAX">MAX</button>
+    </div>
+    <p class="bet-hint" id="betHint">Фишка: <b>50</b> · тап — поставить, удержание — снять</p>
+
+    <div class="bigbets" id="bigbets">
+      <button class="bigbet bigbet--red" data-bet="red">
+        <span class="bigbet__ico">🔴</span>
+        <span class="bigbet__txt">
+          <b>Красное</b>
+          <i>x2 · 18 чисел</i>
+          <em>выплата x2</em>
+        </span>
+      </button>
+      <button class="bigbet bigbet--black" data-bet="black">
+        <span class="bigbet__ico">⚫</span>
+        <span class="bigbet__txt">
+          <b>Чёрное</b>
+          <i>x2 · 18 чисел</i>
+          <em>выплата x2</em>
+        </span>
+      </button>
+      <button class="bigbet bigbet--green" data-bet="n:0">
+        <span class="bigbet__ico">🟢</span>
+        <span class="bigbet__txt">
+          <b>Зеро</b>
+          <em>точно 0 · x36</em>
+        </span>
+      </button>
+    </div>
+
+    <p class="warn" id="noBetWarn" hidden>Поставь монеты на поле 👆</p>
+
+    <div class="betsum">
+      <span>Ставка</span>
+      <b id="betSum">0</b>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn--clear" id="btnClear">Снять всё</button>
+      <button class="btn--rebet" id="btnRebet">Повторить</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН: КОСТИ ══════════════ -->
+  <section class="screen" id="screenDice">
+    <h2 class="h2">🎲 Кости</h2>
+    <p class="sub">Выбери сторону и бросай. Выплата = 0,973 / шанс.</p>
+
+    <div class="dicebox">
+      <div class="diceroll" id="diceRoll">0.0000</div>
+      <div class="dicebar" id="diceBarWrap">
+        <i id="diceBar"></i>
+        <div class="dicebar__mark" id="diceMark" data-label="50%"></div>
+      </div>
+    </div>
+
+    <!-- Фишки свои, но значение общее с рулеткой: обработчик синхронизирует
+         все .chip на странице, поэтому ставка одна и та же в обеих играх. -->
+    <div class="chips">
+      <button class="chip" data-chip="10">10</button>
+      <button class="chip is-active" data-chip="50">50</button>
+      <button class="chip" data-chip="100">100</button>
+      <button class="chip" data-chip="500">500</button>
+      <button class="chip chip--max" data-chip="MAX">MAX</button>
+    </div>
+
+    <div class="panel">
+      <div class="slider">
+        <div class="slider__top">
+          <span>Порог</span>
+          <b id="diceChanceVal">50.00%</b>
+        </div>
+        <input type="range" id="diceChance" min="1" max="99" step="0.5" value="50">
+      </div>
+      <p class="bet-hint" id="diceHint">Фишка: <b>50</b> · выбери сторону</p>
+      <div class="dicesides">
+        <button class="bigbet bigbet--red" id="diceUnder">
+          <span class="bigbet__ico">⬇️</span>
+          <span class="bigbet__txt">
+            <b>Меньше порога</b>
+            <i id="diceMultUnder">—</i>
+            <em id="diceRangeUnder">—</em>
+          </span>
+        </button>
+        <button class="bigbet bigbet--black" id="diceOver">
+          <span class="bigbet__ico">⬆️</span>
+          <span class="bigbet__txt">
+            <b>Больше порога</b>
+            <i id="diceMultOver">—</i>
+            <em id="diceRangeOver">—</em>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН: КЕЙСЫ ══════════════ -->
+  <section class="screen" id="screenCase">
+    <h2 class="h2">🎁 Кейсы</h2>
+    <p class="sub">Монетные кейсы — на активном балансе. Призовой — только за реальные.</p>
+
+    <div class="casepick" id="caseCards"></div>
+
+    <div class="reelbox">
+      <div class="reel" id="reel">
+        <div class="reel__strip" id="reelStrip"></div>
+        <div class="reel__pointer"></div>
+      </div>
+      <div class="reel__res" id="reelRes"></div>
+    </div>
+
+    <button class="btn" id="btnCase">ОТКРЫТЬ</button>
+
+    <div class="panel" style="margin-top:12px">
+      <div class="panel__head" id="oddsHead">Шансы</div>
+      <div class="odds" id="caseList"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН: МАГАЗИН ══════════════ -->
+  <section class="screen" id="screenShop">
+    <h2 class="h2">🛍 Магазин</h2>
+    <p class="sub">Только за реальные монеты. Склад обнуляется в 00:00.</p>
+    <div class="shop" id="shopList"></div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН: ИНВЕНТАРЬ ══════════════ -->
+  <section class="screen" id="screenInv">
+    <h2 class="h2">🎒 Инвентарь</h2>
+    <p class="sub" id="invSub"></p>
+    <div class="shop" id="invList"></div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН: ИСТОРИЯ ══════════════ -->
+  <section class="screen" id="screenHistory">
+    <h2 class="h2">🕘 История</h2>
+    <p class="sub">Последние раунды</p>
+
+    <div class="panel">
+      <div class="panel__head">Раунды</div>
+      <div class="list" id="spinList"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__head">Покупки</div>
+      <div class="list" id="buyList"></div>
+    </div>
+
+    <button class="btn--ghost" id="btnClearSpins">Очистить историю</button>
+  </section>
+
+  <!-- ══════════════ ЭКРАН: СТАТИСТИКА ══════════════ -->
+  <section class="screen" id="screenStats">
+    <h2 class="h2">📊 Статистика</h2>
+
+    <div class="panel">
+      <div class="panel__head">Сегодня</div>
+      <div class="stats" id="statsBox"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__head">За всё время</div>
+      <div class="stats" id="statsAll"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__head">Цвета</div>
+      <div class="hotnums" id="statsColors"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__head">Частые числа</div>
+      <div class="hotnums" id="hotNums"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__head">По играм</div>
+      <div class="rows2" id="gameSpins"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН: ДАННЫЕ ══════════════ -->
+  <section class="screen" id="screenData">
+    <h2 class="h2">⚙️ Данные</h2>
+    <p class="sub">Всё хранится в этом браузере. На сервере баланса нет.</p>
+
+    <div class="panel">
+      <div class="panel__head">Игрок</div>
+      <div class="rows2">
+        <div class="mini"><span>Имя</span><b id="stPlayer">—</b></div>
+        <div class="mini"><span>Telegram ID</span><b id="stId">—</b></div>
+        <div class="mini"><span>Сохранено</span><b id="stSaved">—</b></div>
+        <div class="mini"><span>Сброс</span><b id="stReset">—</b></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__head">Промокод</div>
+      <div class="promo">
+        <input class="promo__input" id="promoInput" type="text"
+               placeholder="XXXX-XXXX-XXXX" autocomplete="off"
+               autocapitalize="characters" autocorrect="off" spellcheck="false">
+        <button class="btn promo__btn" id="btnPromo">Активировать</button>
+      </div>
+      <p class="bet-hint" id="promoHint">Введи промокод — монеты сразу прибавятся к балансу</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel__head">Резервная копия</div>
+      <div class="btnrow">
+        <button class="btn--ghost" id="btnExport">Выгрузить</button>
+        <button class="btn--ghost" id="btnImport">Загрузить</button>
+        <input type="file" id="fileImport" accept="application/json" hidden>
+        <button class="btn--danger" id="btnWipe">Сбросить всё</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ НИЖНЯЯ НАВИГАЦИЯ ══════════════ -->
+  <nav class="navbar">
+    <div class="tabs" id="tabs">
+      <button class="tab is-active" data-go="main">🎡 Рулетка</button>
+      <button class="tab" data-go="dice">🎲 Кости</button>
+      <button class="tab" data-go="case">🎁 Кейсы</button>
+    </div>
+    <div class="tabs tabs--bottom">
+      <button class="tab" data-go="history">🕘 История</button>
+      <button class="tab" data-go="shop">🛍 Магазин</button>
+      <button class="tab" data-go="stats">📊 Статистика</button>
+      <button class="tab tab--wide" data-go="inv">🎒 Инвентарь</button>
+      <button class="tab tab--wide" data-go="data">⚙️ Данные</button>
+    </div>
+  </nav>
+
+</div>
+
+<!-- ══════════════ МОДАЛКА ══════════════ -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__box" id="modalBox"></div>
+</div>
+
+<!-- ══════════════ ТОСТ ══════════════ -->
+<div class="toast" id="toast" hidden></div>
+
+<!-- Список промокодов лежит рядом: приложение сверяет введённый код с ним. -->
+<script src="codes.js?v=1"></script>
+<script src="app.js?v=23"></script>
+</body>
+</html>
