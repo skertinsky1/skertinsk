@@ -1200,18 +1200,6 @@ function paintHistory(){
     : '<div class="empty">Призов пока нет 🛍</div>';
 }
 
-/* Экран статистики убран из интерфейса: он занимал четыре панели и отодвигал
-   игру вниз. Счётчики state.stats продолжают считаться и сохраняться — просто
-   рисовать их теперь некуда, поэтому paintStats удалён вместе с вызовами.
-   А поля экрана «Данные» раньше заполнялись именно внутри paintStats, поэтому
-   для них появилась отдельная функция. */
-function paintData(){
-  $('#stPlayer').textContent = state.player.name;
-  $('#stId').textContent = state.player.id;
-  $('#stSaved').textContent = new Date().toLocaleTimeString('ru-RU');
-  $('#stReset').textContent = state.lastReset;
-}
-
 /* ── Навигация ── */
 
 const stack = ['main'];
@@ -1234,7 +1222,6 @@ function apply(){
   if (cur === 'shop')    paintShop();
   if (cur === 'inv')     paintInv();
   if (cur === 'history') paintHistory();
-  if (cur === 'data')    paintData();
   if (cur === 'main')    paintBets();
   if (cur === 'dice')    paintDice();
   if (cur === 'case')    paintCase();

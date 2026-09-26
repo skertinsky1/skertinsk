@@ -427,11 +427,8 @@ b{font-weight:700}
 .item__sum{font-weight:800; font-size:13px; white-space:nowrap}
 .empty{color:var(--dim); font-size:13px; text-align:center; padding:16px 0}
 
-/* Классы .stats/.stat/.hotnums/.hn ушли вместе с экраном статистики.
-   .rows2 и .mini остались — ими нарисован экран «Данные». */
-.rows2{display:grid; gap:5px}
-.mini{display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--dim); background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 11px}
-.mini b{color:var(--txt); font-size:12.5px; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+/* Классы .stats/.stat/.hotnums/.hn ушли с экраном статистики,
+   .rows2/.mini — с экраном «Данные». */
 
 /* ══════════ МОДАЛКА ══════════ */
 .modal{

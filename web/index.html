@@ -199,30 +199,23 @@
     <button class="btn--ghost" id="btnClearSpins">Очистить историю</button>
   </section>
 
-  <!-- ══════════════ ЭКРАН: ДАННЫЕ ══════════════ -->
-  <section class="screen" id="screenData">
-    <h2 class="h2">⚙️ Данные</h2>
-    <p class="sub">Всё хранится в этом браузере. На сервере баланса нет.</p>
+  <!-- ══════════════ ЭКРАН: ПРОМОКОД ══════════════ -->
+  <!-- Экран «Данные» убран: имя, Telegram ID и время сохранения занимали
+       место и ничего не сообщали игроку. Промокод переехал сюда, кнопка
+       выгрузки/сброса осталась — потерять резервную копию прогресса хуже,
+       чем занять ещё пол-экрана. -->
+  <section class="screen" id="screenPromo">
+    <h2 class="h2">🏷 Промокод</h2>
+    <p class="sub">Введи код — монеты сразу прибавятся к балансу</p>
 
     <div class="panel">
-      <div class="panel__head">Игрок</div>
-      <div class="rows2">
-        <div class="mini"><span>Имя</span><b id="stPlayer">—</b></div>
-        <div class="mini"><span>Telegram ID</span><b id="stId">—</b></div>
-        <div class="mini"><span>Сохранено</span><b id="stSaved">—</b></div>
-        <div class="mini"><span>Сброс</span><b id="stReset">—</b></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel__head">Промокод</div>
       <div class="promo">
         <input class="promo__input" id="promoInput" type="text"
                placeholder="XXXX-XXXX-XXXX" autocomplete="off"
                autocapitalize="characters" autocorrect="off" spellcheck="false">
         <button class="btn promo__btn" id="btnPromo">Активировать</button>
       </div>
-      <p class="bet-hint" id="promoHint">Введи промокод — монеты сразу прибавятся к балансу</p>
+      <p class="bet-hint" id="promoHint">Каждый код работает один раз</p>
     </div>
 
     <div class="panel">
@@ -247,7 +240,7 @@
       <button class="tab" data-go="shop" title="Магазин">🛍</button>
       <button class="tab" data-go="inv" title="Инвентарь">🎒</button>
       <button class="tab" data-go="history" title="История">🕘</button>
-      <button class="tab" data-go="data" title="Данные">⚙️</button>
+      <button class="tab" data-go="promo" title="Промокод">🏷️</button>
     </div>
   </nav>
 
@@ -263,6 +256,6 @@
 
 <!-- Список промокодов лежит рядом: приложение сверяет введённый код с ним. -->
 <script src="codes.js?v=1"></script>
-<script src="app.js?v=26"></script>
+<script src="app.js?v=27"></script>
 </body>
 </html>
