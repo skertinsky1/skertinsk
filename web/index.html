@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#12101c">
 <title>Рулетка с призами</title>
-<link rel="stylesheet" href="style.css?v=23">
+<link rel="stylesheet" href="style.css?v=24">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -15,7 +15,6 @@
   <!-- ══════════════ ШАПКА ══════════════ -->
   <header class="top">
     <div class="top__line">
-      <div class="top__date" id="hudDate">—</div>
       <div class="top__back" id="btnBack" hidden>‹ Назад</div>
     </div>
 
@@ -66,39 +65,27 @@
     <p class="bet-hint" id="betHint">Фишка: <b>50</b> · тап — поставить, удержание — снять</p>
 
     <div class="bigbets" id="bigbets">
-      <button class="bigbet bigbet--red" data-bet="red">
+      <button class="bigbet bigbet--red" data-bet="red" title="Красное — x2, 18 чисел">
         <span class="bigbet__ico">🔴</span>
-        <span class="bigbet__txt">
-          <b>Красное</b>
-          <i>x2 · 18 чисел</i>
-          <em>выплата x2</em>
-        </span>
+        <b>Красное</b>
+        <i>x2</i>
       </button>
-      <button class="bigbet bigbet--black" data-bet="black">
+      <button class="bigbet bigbet--black" data-bet="black" title="Чёрное — x2, 18 чисел">
         <span class="bigbet__ico">⚫</span>
-        <span class="bigbet__txt">
-          <b>Чёрное</b>
-          <i>x2 · 18 чисел</i>
-          <em>выплата x2</em>
-        </span>
+        <b>Чёрное</b>
+        <i>x2</i>
       </button>
-      <button class="bigbet bigbet--green" data-bet="n:0">
+      <button class="bigbet bigbet--green" data-bet="n:0" title="Зеро — x36">
         <span class="bigbet__ico">🟢</span>
-        <span class="bigbet__txt">
-          <b>Зеро</b>
-          <em>точно 0 · x36</em>
-        </span>
+        <b>Зеро</b>
+        <i>x36</i>
       </button>
     </div>
 
     <p class="warn" id="noBetWarn" hidden>Поставь монеты на поле 👆</p>
 
-    <div class="betsum">
-      <span>Ставка</span>
-      <b id="betSum">0</b>
-    </div>
-
-    <div class="btnrow">
+    <div class="betrow">
+      <div class="betsum"><span>Ставка</span><b id="betSum">0</b></div>
       <button class="btn--clear" id="btnClear">Снять всё</button>
       <button class="btn--rebet" id="btnRebet">Повторить</button>
     </div>
@@ -212,36 +199,6 @@
     <button class="btn--ghost" id="btnClearSpins">Очистить историю</button>
   </section>
 
-  <!-- ══════════════ ЭКРАН: СТАТИСТИКА ══════════════ -->
-  <section class="screen" id="screenStats">
-    <h2 class="h2">📊 Статистика</h2>
-
-    <div class="panel">
-      <div class="panel__head">Сегодня</div>
-      <div class="stats" id="statsBox"></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel__head">За всё время</div>
-      <div class="stats" id="statsAll"></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel__head">Цвета</div>
-      <div class="hotnums" id="statsColors"></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel__head">Частые числа</div>
-      <div class="hotnums" id="hotNums"></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel__head">По играм</div>
-      <div class="rows2" id="gameSpins"></div>
-    </div>
-  </section>
-
   <!-- ══════════════ ЭКРАН: ДАННЫЕ ══════════════ -->
   <section class="screen" id="screenData">
     <h2 class="h2">⚙️ Данные</h2>
@@ -280,18 +237,17 @@
   </section>
 
   <!-- ══════════════ НИЖНЯЯ НАВИГАЦИЯ ══════════════ -->
+  <!-- Один ряд иконок без подписей: два ряда с текстом занимали больше
+       высоты, чем нужно. Названия остались в title — работает долгий тап. -->
   <nav class="navbar">
     <div class="tabs" id="tabs">
-      <button class="tab is-active" data-go="main">🎡 Рулетка</button>
-      <button class="tab" data-go="dice">🎲 Кости</button>
-      <button class="tab" data-go="case">🎁 Кейсы</button>
-    </div>
-    <div class="tabs tabs--bottom">
-      <button class="tab" data-go="history">🕘 История</button>
-      <button class="tab" data-go="shop">🛍 Магазин</button>
-      <button class="tab" data-go="stats">📊 Статистика</button>
-      <button class="tab tab--wide" data-go="inv">🎒 Инвентарь</button>
-      <button class="tab tab--wide" data-go="data">⚙️ Данные</button>
+      <button class="tab is-active" data-go="main" title="Рулетка">🎡</button>
+      <button class="tab" data-go="dice" title="Кости">🎲</button>
+      <button class="tab" data-go="case" title="Кейсы">🎁</button>
+      <button class="tab" data-go="shop" title="Магазин">🛍</button>
+      <button class="tab" data-go="inv" title="Инвентарь">🎒</button>
+      <button class="tab" data-go="history" title="История">🕘</button>
+      <button class="tab" data-go="data" title="Данные">⚙️</button>
     </div>
   </nav>
 
@@ -307,6 +263,6 @@
 
 <!-- Список промокодов лежит рядом: приложение сверяет введённый код с ним. -->
 <script src="codes.js?v=1"></script>
-<script src="app.js?v=25"></script>
+<script src="app.js?v=26"></script>
 </body>
 </html>

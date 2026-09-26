@@ -81,7 +81,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 
 const el = {
-    hudDate:$('#hudDate'), hudTimer:$('#hudTimer'),
+    hudTimer:$('#hudTimer'),
     hudReal:$('#hudReal'), hudTest:$('#hudTest'),
     cardReal:$('#cardReal'), cardTest:$('#cardTest'),
     walletSw:$('#walletSw'), walletNote:$('#walletNote'),
@@ -91,19 +91,16 @@ const el = {
   rows:$('#bigbets'), betSum:$('#betSum'), clear:$('#btnClear'), rebet:$('#btnRebet'),
   warn:$('#noBetWarn'), shop:$('#shopList'), spinList:$('#spinList'),
   invList:$('#invList'), invSub:$('#invSub'),
-  buyList:$('#buyList'), stats:$('#statsBox'), statsAll:$('#statsAll'),
-  colors:$('#statsColors'), hot:$('#hotNums'), testBadge:$('#testBadge'),
+  buyList:$('#buyList'), testBadge:$('#testBadge'),
   modal:$('#modal'), modalBox:$('#modalBox'), toast:$('#toast'),
   diceRoll:$('#diceRoll'), diceBar:$('#diceBar'), diceBarWrap:$('#diceBarWrap'), diceMark:$('#diceMark'),
   diceChance:$('#diceChance'), diceChanceVal:$('#diceChanceVal'), diceUnder:$('#diceUnder'), diceOver:$('#diceOver'),
   diceMultUnder:$('#diceMultUnder'), diceMultOver:$('#diceMultOver'), diceHint:$('#diceHint'),
   diceRangeUnder:$('#diceRangeUnder'), diceRangeOver:$('#diceRangeOver'),
   caseBtn:$('#btnCase'), reel:$('#reel'), reelStrip:$('#reelStrip'), reelRes:$('#reelRes'),
-  caseList:$('#caseList'), caseCards:$('#caseCards'), oddsHead:$('#oddsHead'), gameSpins:$('#gameSpins'),
+  caseList:$('#caseList'), caseCards:$('#caseCards'), oddsHead:$('#oddsHead'),
   promoInput:$('#promoInput'), promoHint:$('#promoHint'), btnPromo:$('#btnPromo')
 };
-
-const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 
 /* ── State ── */
 
@@ -526,8 +523,7 @@ function spin(){
     paintHud();
     paintRecent();
     if (stack[stack.length-1] === 'history') paintHistory();
-    if (stack[stack.length-1] === 'stats') paintStats();
-
+  
     spinning = false;
     el.spin.disabled = true;
 
@@ -640,7 +636,6 @@ function diceStop(side, amt, v){
   const net = payout - amt;
   if (net > 0) toast('+' + fmt(net) + ' 🎲');
   else toast('−' + fmt(amt) + ' 😔');
-  if (stack[stack.length-1] === 'stats') paintStats();
 }
 
 function rollDice(side){
@@ -941,7 +936,6 @@ function finishCase(cfg, tier){
   if (stack[stack.length-1] === 'shop') paintShop();
   if (stack[stack.length-1] === 'inv')  paintInv();
   if (stack[stack.length-1] === 'history') paintHistory();
-  if (stack[stack.length-1] === 'stats') paintStats();
 }
 
 function openCase(){
@@ -1044,12 +1038,6 @@ function paintRecent(){
   }).join('');
 }
 
-function paintDate(){
-  const d = new Date();
-  const day = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'][d.getDay()];
-  el.hudDate.textContent = '🌅 ' + day + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
-}
-
 function paintTimer(){
   const now = new Date();
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -1128,7 +1116,6 @@ function buyPrize(id){
   paintShop();
   paintHud();
   if (stack[stack.length-1] === 'history') paintHistory();
-  if (stack[stack.length-1] === 'stats') paintStats();
 
   prizeModal(p);
 }
@@ -1166,7 +1153,7 @@ function bigWinModal(n, best, staked, game){
   );
 }
 
-/* ── История / Статистика ── */
+/* ── История ── */
 
 function timeAgo(ts){
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -1213,66 +1200,12 @@ function paintHistory(){
     : '<div class="empty">Призов пока нет 🛍</div>';
 }
 
-function statCard(label, value, cls){
-  return '<div class="stat"><span>' + label + '</span><b class="' + (cls||'') + '">' + value + '</b></div>';
-}
-
-function paintStats(){
-  const d = state.day, s = state.stats;
-  const net = d.won - d.staked;
-
-  el.stats.innerHTML =
-    statCard('Раундов сегодня', d.spins) +
-    statCard('Поставлено', fmt(d.staked)) +
-    statCard('Выиграно', fmt(d.won), 'up') +
-    statCard('Лучший выигрыш', fmt(d.best), 'up') +
-    statCard('Итог дня', (net > 0 ? '+' : '') + fmt(net), net > 0 ? 'up' : net < 0 ? 'down' : '') +
-    statCard('ROI', d.staked ? Math.round(net / d.staked * 100) + '%' : '—',
-      net > 0 ? 'up' : net < 0 ? 'down' : '');
-
-  el.statsAll.innerHTML =
-    statCard('Всего спинов', fmt(s.spins)) +
-    statCard('Всего ставок', fmt(s.staked)) +
-    statCard('Всего выиграно', fmt(s.won), 'up') +
-    statCard('Рекорд', fmt(s.best), 'up') +
-    statCard('Профит всего', (s.won - s.staked > 0 ? '+' : '') + fmt(s.won - s.staked),
-      s.won - s.staked > 0 ? 'up' : '') +
-    statCard('Призов куплено', Object.values(state.prizes).reduce((a,b)=>a+b.bought,0)) +
-    statCard('Потрачено на призы', fmt(Object.values(state.prizes).reduce((a,b)=>a+b.spent,0))) +
-    statCard('Монет в обороте', fmt(s.staked));
-
-  const counts = {};
-  const rSpins = state.spins.filter(x => (x.g || 'roulette') === 'roulette');
-  rSpins.forEach(x => counts[x.n] = (counts[x.n]||0) + 1);
-  const total = rSpins.length || 1;
-  const sum = c => rSpins.filter(x => c(x)).length;
-  const r = sum(n => RED.has(n.n));
-  const b = sum(n => BLACK.has(n.n));
-  const z = sum(n => n.n === 0);
-  el.colors.innerHTML =
-    statCard('🔴 Красное', r + ' · ' + Math.round(r/total*100) + '%') +
-    statCard('⚫ Чёрное', b + ' · ' + Math.round(b/total*100) + '%') +
-    statCard('🟢 Зеро', z + ' · ' + (z/total*100).toFixed(1) + '%');
-
-  el.gameSpins.innerHTML = GAME_IDS.map(id => {
-    const g = state.byGame[id] || {spins:0, staked:0, won:0};
-    const net = g.won - g.staked;
-    return statCard(GAMES[id], g.spins + ' · ' + (net > 0 ? '+' : '') + fmt(net),
-      net > 0 ? 'up' : net < 0 ? 'down' : '');
-  }).join('');
-
-  const hot = Object.keys(counts)
-    .map(Number)
-    .sort((a,b) => counts[b] - counts[a])
-    .slice(0, 12);
-
-  el.hot.innerHTML = hot.length
-    ? hot.map(n => {
-        const dot = n === 0 ? '🟢' : RED.has(n) ? '🔴' : '⚫';
-        return '<div class="hn"><i style="background:' + colorOf(n) + '"></i>' + n + ' ' + dot + ' <em>×' + counts[n] + '</em></div>';
-      }).join('')
-    : '<div class="empty">Нет данных</div>';
-
+/* Экран статистики убран из интерфейса: он занимал четыре панели и отодвигал
+   игру вниз. Счётчики state.stats продолжают считаться и сохраняться — просто
+   рисовать их теперь некуда, поэтому paintStats удалён вместе с вызовами.
+   А поля экрана «Данные» раньше заполнялись именно внутри paintStats, поэтому
+   для них появилась отдельная функция. */
+function paintData(){
   $('#stPlayer').textContent = state.player.name;
   $('#stId').textContent = state.player.id;
   $('#stSaved').textContent = new Date().toLocaleTimeString('ru-RU');
@@ -1301,7 +1234,7 @@ function apply(){
   if (cur === 'shop')    paintShop();
   if (cur === 'inv')     paintInv();
   if (cur === 'history') paintHistory();
-  if (cur === 'stats')   paintStats();
+  if (cur === 'data')    paintData();
   if (cur === 'main')    paintBets();
   if (cur === 'dice')    paintDice();
   if (cur === 'case')    paintCase();
@@ -1401,7 +1334,6 @@ function applyPromo(){
   const view = stack[stack.length-1];
   if (view === 'shop') paintShop();
   if (view === 'inv')  paintInv();
-  if (view === 'stats') paintStats();
 }
 /* ── Экспорт / импорт ── */
 
@@ -1478,8 +1410,7 @@ function wipe(){
     buildReel(CASES[caseSel]); paintCase();
     const top = stack[stack.length-1];    if (top === 'shop') paintShop();
     if (top === 'history') paintHistory();
-    if (top === 'stats') paintStats();
-    closeModal();
+      closeModal();
     toast('Начинаем с нуля 🎰');
   };
 }
@@ -1574,10 +1505,9 @@ $('#btnWipe').addEventListener('click', wipe);
 function onNewDay(){
   bets.clear();
   lastBets = [];
-  paintDate(); paintHud(); paintBets(); paintRecent(); paintDice(); paintCase();
+  paintHud(); paintBets(); paintRecent(); paintDice(); paintCase();
   if (stack[stack.length-1] === 'shop') paintShop();
   if (stack[stack.length-1] === 'history') paintHistory();
-  if (stack[stack.length-1] === 'stats') paintStats();
   toast('Новый день 🌅 +' + fmt(START_BALANCE) + ' 🎁');
 }
 
@@ -1599,7 +1529,6 @@ bindFields();
 const firstRun = checkDay();
 render();
 apply();
-paintDate();
 paintTimer();
 paintHud();
 paintRecent();
