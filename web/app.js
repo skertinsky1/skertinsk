@@ -717,11 +717,11 @@ const allocSlots = shares => {
    сумме слоты не соберутся в 100 плиток и показанный шанс разойдётся с
    барабаном. Других копий этих чисел в проекте нет — это единственный источник. */
 const COIN_CHANCES = [
-  {id:'milspec',    name:'Mil-Spec',   icon:'🪙', target:79.92, mult:0.6},
-  {id:'restricted', name:'Restricted', icon:'🥈', target:15.98, mult:4},
-  {id:'classified', name:'Classified', icon:'🥉', target:3.20,  mult:20},
-  {id:'covert',     name:'Covert',     icon:'🔴', target:0.64,  mult:60},
-  {id:'special',    name:'Special',    icon:'👑', target:0.26,  mult:200}
+  {id:'milspec',    name:'Mil-Spec',   icon:'🪙', target:79.92, mult:0.4},
+  {id:'restricted', name:'Restricted', icon:'🥈', target:15.98, mult:3},
+  {id:'classified', name:'Classified', icon:'🥉', target:3.20,  mult:15},
+  {id:'covert',     name:'Covert',     icon:'🔴', target:0.64,  mult:40},
+  {id:'special',    name:'Special',    icon:'👑', target:0.26,  mult:100}
 ];
 const COIN_SLOTS = allocSlots(COIN_CHANCES.map(t => t.target / 100));
 const COIN_TIERS = COIN_CHANCES.map((t, i) => Object.assign({}, t, {slots: COIN_SLOTS[i]}));
@@ -740,7 +740,7 @@ const coinCase = (id, price, label, icon) => ({id, price, label, icon, kind:'coi
    сколько сама цена.
 
    Баланс кейсов: RTP обоих выше 100% — это демо-щедрость, а не ошибка.
-   Монетный: слоты 80/15/3/1/1 при множителях 0.6/4/20/60/200 -> 428% цены.
+   Монетный: слоты 80/15/3/1/1 при множителях 0.4/3/15/40/100 -> 262% цены.
    Призовой: веса 50/30/15/5, пустого слота нет -> шансы обратно пропорциональны
    цене приза. EV = 6000 за кейс в 5000 -> 120% цены, вклад каждого тира одинаков.
    Считать RTP призового кейса в монетах бессмысленно: prize в нём это не монеты,
