@@ -31,11 +31,12 @@ const BY_SPEC = Object.fromEntries(FIELDS.map(f => [f.spec, f]));
 
                Веса нормализуются автоматически, в сумме не обязаны давать 100. */
 const PRIZES = [
-  {id:'hug',      name:'Обнимашки', emoji:'🤗', price:0,     weight:0},   // есть ∞, вне кейса
-  {id:'icecream', name:'Мороженка', emoji:'🍦', price:3000,  weight:50},  // есть 5
-  {id:'choco',    name:'Шоколадка', emoji:'🍫', price:5000,  weight:30},  // есть 3
-  {id:'pizza',    name:'Пицца',     emoji:'🍕', price:10000, weight:15},  // есть 2
-  {id:'wish',     name:'Желание',   emoji:'🎁', price:30000, weight:5},   // есть 1
+  {id:'hug',        name:'Обнимашки',        emoji:'🤗', price:0,     weight:0},   // есть ∞, вне кейса
+  {id:'icecream',   name:'Мороженка',        emoji:'🍦', price:3000,  weight:50},  // есть 5
+  {id:'choco',      name:'Шоколадка',        emoji:'🍫', price:5000,  weight:30},  // есть 3
+  {id:'secretwish', name:'Секретное желание', emoji:'🌟', price:7000, weight:0},   // только магазин
+  {id:'pizza',      name:'Пицца',            emoji:'🍕', price:10000, weight:15},  // есть 2
+  {id:'wish',       name:'Желание',          emoji:'🎁', price:30000, weight:5},   // есть 1
 
 ];
 
@@ -763,7 +764,10 @@ function buildItemTiers(){
   if (hasNothing) shares.push(CASE_ITEM_NOTHING / total);
   const slots  = allocSlots(shares);
   /* chance из slots: один слот из 100 — ровно 1%, цифра всегда совпадает
-     с барабаном. При весах 50/30/15/5 это те же 50/30/15/5. */
+     с барабаном. При весах 50/30/15/5 это те же 50/30/15/5, потому что
+     CASE_ITEM_NOTHING = 0: пустой слот не размывает пул. Если выставить
+     ему вес больше нуля, доли пересчитаются от общей суммы и совпадут
+     с числом слотов, а не с исходными весами. */
   const tiers  = pool.map((p, i) => ({id:p.id, chance:+(slots[i]).toFixed(2), slots:slots[i]}));
   if (hasNothing) tiers.push({id:null, chance:+(slots[pool.length]).toFixed(2), slots:slots[pool.length]});
   return tiers;
