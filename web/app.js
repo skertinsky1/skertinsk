@@ -718,10 +718,10 @@ const allocSlots = shares => {
    барабаном. Других копий этих чисел в проекте нет — это единственный источник. */
 const COIN_CHANCES = [
   {id:'milspec',    name:'Mil-Spec',   icon:'🪙', target:79.92, mult:0.4},
-  {id:'restricted', name:'Restricted', icon:'🥈', target:15.98, mult:3},
-  {id:'classified', name:'Classified', icon:'🥉', target:3.20,  mult:15},
-  {id:'covert',     name:'Covert',     icon:'🔴', target:0.64,  mult:40},
-  {id:'special',    name:'Special',    icon:'👑', target:0.26,  mult:100}
+  {id:'restricted', name:'Restricted', icon:'🥈', target:15.98, mult:1.5},
+  {id:'classified', name:'Classified', icon:'🥉', target:3.20,  mult:4},
+  {id:'covert',     name:'Covert',     icon:'🔴', target:0.64,  mult:15},
+  {id:'special',    name:'Special',    icon:'👑', target:0.26,  mult:150}
 ];
 const COIN_SLOTS = allocSlots(COIN_CHANCES.map(t => t.target / 100));
 const COIN_TIERS = COIN_CHANCES.map((t, i) => Object.assign({}, t, {slots: COIN_SLOTS[i]}));
@@ -740,7 +740,7 @@ const coinCase = (id, price, label, icon) => ({id, price, label, icon, kind:'coi
    сколько сама цена.
 
    Баланс кейсов: RTP обоих выше 100% — это демо-щедрость, а не ошибка.
-   Монетный: слоты 80/15/3/1/1 при множителях 0.4/3/15/40/100 -> 262% цены.
+   Монетный: слоты 80/15/3/1/1 при множителях 0.4/1.5/4/15/150 -> 231,5% цены.
    Призовой: веса 50/30/15/5, пустого слота нет -> шансы обратно пропорциональны
    цене приза. EV = 6000 за кейс в 5000 -> 120% цены, вклад каждого тира одинаков.
    Считать RTP призового кейса в монетах бессмысленно: prize в нём это не монеты,
@@ -794,8 +794,27 @@ function pickWeighted(list){
   return list[list.length-1];
 }
 
+/* Перемешивание Фишера—Йетса. */
+function shuffled(list){
+  const a = list.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = randInt(i + 1);
+    const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+/* Лента собирается блоками по slots, а потом перемешивается. Без перемешивания
+   порядок был детерминированным: сначала 80 Mil-Spec, потом 15 Restricted, и так
+   далее. На экране это выглядело сломанным барабаном — длинные одноцветные
+   полосы, и игрок видел «Mil-Spec, Mil-Spec, Mil-Spec» подряд. Шансы от
+   перемешивания не меняются: плиток по-прежнему ровно 100, из них 80 Mil-Spec,
+   просто лежат они в случайном порядке.
+
+   Серии всё равно будут — при тире в 80% пять Mil-Spec подряд математически
+   нормально. Перемешивание убирает именно полосатость, а не серии. */
 function reelOf(cfg){
-  return cfg.tiers.reduce((a,t) => a.concat(new Array(t.slots).fill(t)), []);
+  return shuffled(cfg.tiers.reduce((a,t) => a.concat(new Array(t.slots).fill(t)), []));
 }
 
 function tileHtml(cfg, t){
@@ -812,11 +831,17 @@ function tileHtml(cfg, t){
     '<b>' + fmt(t.coins) + '</b><i>' + t.name + '</i></div>';
 }
 
-function buildReel(cfg){
-  const one = reelOf(cfg);
+/* Каждая копия ленты перемешивается по-своему, чтобы полоса не читалась как
+   повтор одного и того же блока. Последняя копия — ровно та `one`, по которой
+   openCase() ищет слот выигрыша: барабан останавливается именно на ней, и если
+   её порядок не совпадёт с порядком в hits, остановка уедет на чужой тир. */
+function buildReel(cfg, one){
+  one = one || reelOf(cfg);
   let html = '';
-  for (let c = 0; c < REEL_COPIES; c++)
-    for (const t of one) html += tileHtml(cfg, t);
+  for (let c = 0; c < REEL_COPIES; c++){
+    const copy = (c === REEL_COPIES - 1) ? one : reelOf(cfg);
+    for (const t of copy) html += tileHtml(cfg, t);
+  }
   el.reelStrip.innerHTML = html;
   el.reelStrip.style.transition = 'none';
   el.reelStrip.style.transform = 'translateX(0px)';
@@ -943,6 +968,11 @@ function openCase(){
      Шаг берётся из реального offsetLeft, а не из width: у слота есть margin,
      и шаг = width + 2*margin. */
   const one = reelOf(cfg);
+  /* Лента пересобирается под этот спин из того же перемешанного массива, по
+     которому ниже ищется слот выигрыша. Иначе DOM и hits считались бы от
+     разных перемешиваний и барабан останавливался бы на другом тире, чем
+     показывает строка результата. */
+  buildReel(cfg, one);
   const want = tier.id || 'empty';
   const hits = [];
   for (let i = 0; i < one.length; i++) if ((one[i].id || 'empty') === want) hits.push(i);
